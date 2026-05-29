@@ -7,13 +7,14 @@ Modify this file and ask Claude to adjust the plan accordingly.
 
 ## Profile Summary
 
+- **Weight:** 63 kg | **Height:** 171 cm | **BMI:** 21.5 (healthy, lean)
 - **Primary activity:** Walking (0.5–1.7 km sessions, HR 95–127 bpm)
 - **Swimming:** Occasional lap swimming (500–600m sessions)
 - **Strength training:** Infrequent (needs consistency)
 - **Resting HR:** 69 bpm
 - **Sleep:** ~6 hours/night (target 7.5+)
 - **Body battery:** Starts night at ~34, recovers to ~74 by midday
-- **Goal:** Muscle gain
+- **Goal:** Muscle gain (lean bulk)
 
 ---
 
@@ -93,23 +94,25 @@ Rest 90s between rounds
 
 ### Daily Targets
 
+Based on 63 kg bodyweight (2.3g protein/kg, ~300 kcal lean bulk surplus).
+
 | Metric | Training days | Rest days |
 |--------|--------------|-----------|
-| Calories | 2,600–2,800 kcal | 2,200–2,400 kcal |
-| Protein | 160–180g | 150–160g |
-| Carbs | 300–350g | 220–260g |
-| Fat | 70–90g | 60–75g |
+| Calories | 2,500–2,600 kcal | 2,100–2,200 kcal |
+| Protein | 140–150g | 130–140g |
+| Carbs | 270–310g | 210–240g |
+| Fat | 65–80g | 55–70g |
 
 ### Protein by Meal
 
 | Meal | Target |
 |------|--------|
-| Breakfast | 35–40g |
-| Lunch | 45–50g |
-| Pre-workout snack | 20–25g |
-| Dinner | 45–50g |
-| Evening snack | 20–25g |
-| **Total** | **~170g** |
+| Breakfast | 30–35g |
+| Lunch | 40–45g |
+| Pre-workout snack | 20g |
+| Dinner | 40–45g |
+| Evening snack | 20g |
+| **Total** | **~145g** |
 
 ---
 
@@ -232,7 +235,7 @@ Pick one:
 
 ## Notes
 
-- **No weight logged in Garmin** — once weight is tracked, calorie targets can be made more precise
+- **Weight:** 63 kg / 171 cm — targets are calibrated to this. Update if weight changes significantly (±3 kg)
 - **Sleep is the bottleneck** — muscle is built during sleep. 6 hours limits gains. Evening milk + PB snack helps
 - **Body battery starts at 34** — eating enough carbs at dinner restores glycogen and improves overnight recovery
 - **Consistency beats intensity** — there was a 3-week gap in strength training (Apr 24 → May 29). Never skip more than 10 days
