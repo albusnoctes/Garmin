@@ -1,0 +1,155 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            artifact: garmin-connect-macos-arm64
+          - os: macos-15-intel
+            artifact: garmin-connect-macos-x64
+          - os: ubuntu-latest
+            artifact: garmin-connect-linux-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Extract version from changelog
+        id: version
+        run: |
+          VERSION=$(sed -n 's/^## \[\([^]]*\)\].*/\1/p' CHANGELOG.md | head -1)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.1.0
+
+      - name: Set version
+        run: make set-version VERSION=${{ steps.version.outputs.version }}
+
+      - name: Install dependencies
+        run: make deps
+
+      - name: Build binary
+        run: make binary
+
+      - name: Rename binary
+        run: mv dist/garmin-connect dist/${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION=$(sed -n 's/^## \[\([^]]*\)\].*/\1/p' CHANGELOG.md | head -1)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          CONTENT=$(awk '
+            /^## \[/ {
+              if (found) exit
+              found=1
+              next
+            }
+            found && /^\[[^]]+\]:/ { exit }
+            found { print }
+          ' CHANGELOG.md)
+
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Set version
+        run: make set-version VERSION=${{ steps.changelog.outputs.version }}
+
+      - name: Install dependencies
+        run: make deps
+
+      - name: Run release checks
+        run: make can-release
+
+      - name: Build package
+        run: make package/check
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          for dir in artifacts/*/; do
+            name=$(basename "$dir")
+            cp "$dir$name" "release/$name"
+            chmod +x "release/$name"
+          done
+          ls -la release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ steps.changelog.outputs.version }}
+          name: garmin-connect-cli v${{ steps.changelog.outputs.version }}
+          body: ${{ steps.changelog.outputs.content }}
+          files: |
+            release/*
+            dist/*.whl
+            dist/*.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Homebrew tap
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          SHA_ARM=$(shasum -a 256 release/garmin-connect-macos-arm64 | cut -d' ' -f1)
+          SHA_X64=$(shasum -a 256 release/garmin-connect-macos-x64 | cut -d' ' -f1)
+
+          git clone https://x-access-token:${TAP_TOKEN}@github.com/eddmann/homebrew-tap.git
+          cd homebrew-tap
+
+          # Update version
+          sed -i "s/version \".*\"/version \"${{ steps.changelog.outputs.version }}\"/" Formula/garmin-connect-cli.rb
+
+          # Update ARM SHA256 (within on_arm block)
+          sed -i "/on_arm/,/end/{s/sha256 \"[a-f0-9]*\"/sha256 \"${SHA_ARM}\"/;}" Formula/garmin-connect-cli.rb
+
+          # Update Intel SHA256 (within on_intel block)
+          sed -i "/on_intel/,/end/{s/sha256 \"[a-f0-9]*\"/sha256 \"${SHA_X64}\"/;}" Formula/garmin-connect-cli.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/garmin-connect-cli.rb
+          git commit -m "chore(garmin-connect-cli): update to ${{ steps.changelog.outputs.version }}"
+          git push

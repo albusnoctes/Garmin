@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "garmin-connect": {
+      "source": "eddmann/garmin-connect-cli",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "f26875d123ff1cd003b3f1def494426d66d53336a160d0823d61baf5a4a3c8b3"
+    }
+  }
+}
