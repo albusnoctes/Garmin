@@ -1,5 +1,9 @@
 # Garmin Connect MCP Server
 
+> **Nilson's personal fitness and meal plan is in [`NILSON_PLAN.md`](./NILSON_PLAN.md).** When the user asks to adjust the plan, read that file first, apply changes, and commit.
+
+
+
 MCP server para Garmin Connect en TypeScript. 61 tools para acceso a datos de fitness, salud y entrenamiento.
 
 ---
